@@ -1,0 +1,65 @@
+# SwiftLint for SNCloud. Run it from the repository root: `swiftlint`.
+#
+# The same configuration `rmcloud-swift` runs, for the same reason: the
+# mechanical mistakes a reader stops noticing — a force unwrap that takes the
+# whole run down with a signal, `count == 0` where `isEmpty` was meant. The shape
+# of the code is decided in the comments above each declaration, not here.
+
+excluded:
+  - .build
+  - .swiftpm
+  - build
+  - DerivedData
+  - SNCloud.xcodeproj
+
+disabled_rules:
+  # House style, shared with the packages beside this one.
+  - trailing_comma
+  # The test suites grow by cases rather than by concerns, because that is how
+  # a reverse-engineered protocol is learned.
+  - file_length
+  - function_body_length
+  # A response body turned into text for a log line or an error's detail: bytes
+  # that are not valid UTF-8 still have to produce something a person can read.
+  - optional_data_string_conversion
+  # `SNError.==` is a `switch` with one branch per case, spelled out because the
+  # synthesised witness is absent from a binary framework's symbol table.
+  - cyclomatic_complexity
+
+opt_in_rules:
+  - array_init
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - empty_count
+  - empty_string
+  - fatal_error_message
+  - first_where
+  - flatmap_over_map_reduce
+  # Zero force unwraps, product code and tests alike: a `!` in a test ends the
+  # whole run with a signal, so the case that failed is the one thing the output
+  # does not name.
+  - force_unwrapping
+  - joined_default_parameter
+  - last_where
+  - legacy_multiple
+  - literal_expression_end_indentation
+  - redundant_nil_coalescing
+  - sorted_first_last
+  - toggle_bool
+  - unavailable_function
+  - unowned_variable_capture
+  - yoda_condition
+
+line_length:
+  warning: 150
+  ignores_urls: true
+  ignores_comments: true
+  ignores_interpolated_strings: true
+
+# `id`, `to`, `n`, `a`, `b` are locals in tests and wire field names.
+identifier_name:
+  min_length: 1
+
+large_tuple:
+  warning: 3

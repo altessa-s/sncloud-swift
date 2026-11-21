@@ -1,0 +1,60 @@
+# The framework wrapper, and nothing else.
+#
+# `Package.swift` beside this file is the real project. This file exists because
+# SwiftPM cannot produce a `.framework`, and an `.xcframework` is what the
+# application consumes: the same sources are compiled once more, here, as a
+# framework target, and `Scripts/build-xcframework.sh` wraps the result.
+#
+# `RedactLog` is **linked and not embedded**: it is a framework the consuming
+# application already carries, and a second copy would put two `LogSink`
+# protocols in one process — a sink the host installed would then never receive
+# the lines this package writes. `Scripts/RedactLog.pin` names the release, it
+# has to agree with the host's, and `Scripts/fetch-redactlog.sh` puts its
+# framework in `build/deps/`.
+#
+# Generated project, not committed: run the script.
+name: SNCloud
+
+options:
+  bundleIdPrefix: io.altessa
+  deploymentTarget:
+    macOS: "15.0"
+    iOS: "18.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    # What makes the module readable by a later compiler than the one that built
+    # it: the `.swiftinterface` beside the binary module.
+    BUILD_LIBRARY_FOR_DISTRIBUTION: "YES"
+    SWIFT_STRICT_CONCURRENCY: complete
+    CLANG_ENABLE_MODULE_DEBUGGING: "NO"
+
+targets:
+  SNCloud:
+    type: framework
+    # One target, three slices — not three targets, so the scheme, the product
+    # name and the module name stay single.
+    supportedDestinations: [macOS, iOS]
+    sources:
+      - path: Sources/SNCloud
+    dependencies:
+      - framework: build/deps/RedactLog.xcframework
+        embed: false
+    settings:
+      base:
+        PRODUCT_NAME: SNCloud
+        PRODUCT_MODULE_NAME: SNCloud
+        DEFINES_MODULE: "YES"
+        SKIP_INSTALL: "NO"
+        INSTALL_PATH: /Library/Frameworks
+        DYLIB_INSTALL_NAME_BASE: "@rpath"
+        GENERATE_INFOPLIST_FILE: "YES"
+        PRODUCT_BUNDLE_IDENTIFIER: io.altessa.sncloud
+        # 0.0.0 says "not a release". A release overrides it with the tag,
+        # through `Scripts/build-xcframework.sh`.
+        MARKETING_VERSION: "0.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ARCHS: "$(ARCHS_STANDARD)"
+        ONLY_ACTIVE_ARCH: "NO"
